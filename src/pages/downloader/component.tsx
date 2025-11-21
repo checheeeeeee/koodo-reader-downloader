@@ -54,6 +54,32 @@ export default class Downloader extends React.Component<
       return;
     }
     try {
+      const existingRecord = await DatabaseService.getRecord(
+        electronicBookId,
+        "books"
+      );
+      if (existingRecord) {
+        const existingFormatLower = existingRecord.format.toLowerCase();
+        const alreadyExists = await BookUtil.isBookExist(
+          electronicBookId,
+          existingFormatLower,
+          existingRecord.path
+        );
+        console.log(alreadyExists);
+        if (alreadyExists) {
+          if (this._isMounted) {
+            ConfigService.setReaderConfig("isDownloading", "no");
+            this.props.history.replace({
+              pathname: `/${existingFormatLower}/${electronicBookId}`,
+              search: `?title=${encodeURIComponent(
+                existingRecord.name
+              )}&file=${encodeURIComponent(electronicBookId)}`,
+            });
+          }
+          return;
+        }
+      }
+
       this.setState({ status: "loading" });
       ConfigService.setReaderConfig("isDownloading", "yes");
       const { buffer, filename, contentType } = await downloadElectronicBook(
