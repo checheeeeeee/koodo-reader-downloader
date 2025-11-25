@@ -190,7 +190,7 @@ const createMainWin = () => {
   }
 
   const urlLocation = isDev
-    ? "http://localhost:3000"
+    ? "http://localhost:3001/e-reader"
     : `file://${path.join(__dirname, "./build/index.html")}`;
   mainWin.loadURL(urlLocation);
 

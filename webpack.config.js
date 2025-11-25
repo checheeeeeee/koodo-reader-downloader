@@ -7,6 +7,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "./build"),
     filename: "main.js",
+    publicPath: "/e-reader/",
   },
   resolve: {
     extensions: [".ts", "*", ".mjs", ".js", ".json", ".tsx"],

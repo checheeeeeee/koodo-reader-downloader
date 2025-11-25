@@ -16,14 +16,21 @@ declare global {
 const getApiBaseUrl = (): string => {
   const envVal = (process.env.REACT_APP_API_BASE_URL || "").trim();
   if (envVal.length > 0) return envVal;
-  const winVal = typeof window !== "undefined" ? (window.__ENV__?.REACT_APP_API_BASE_URL || "").trim() : "";
+  const winVal =
+    typeof window !== "undefined"
+      ? (window.__ENV__?.REACT_APP_API_BASE_URL || "").trim()
+      : "";
   if (winVal.length > 0) return winVal;
   return process.env.NODE_ENV === "development" ? "/proxy-api" : "";
 };
 export const downloadElectronicBook = async (
   electronicBookId: string
-): Promise<{ buffer: ArrayBuffer; filename?: string; contentType?: string }> => {
-  const token = localStorage.getItem("Authorization");
+): Promise<{
+  buffer: ArrayBuffer;
+  filename?: string;
+  contentType?: string;
+}> => {
+  const token = localStorage.getItem("Admin-Tokens");
   const headers = new Headers();
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);

@@ -3,7 +3,7 @@ export async function fetchData<T = unknown>(
   options: RequestInit = {}
 ): Promise<T> {
   // 安全获取 token
-  const token = localStorage.getItem("Authorization");
+  const token = localStorage.getItem("Admin-Tokens");
 
   if (typeof token !== "string") {
     // 可选：是否允许无 token 请求？根据业务决定
