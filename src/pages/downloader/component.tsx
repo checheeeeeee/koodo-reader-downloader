@@ -11,7 +11,11 @@ import {
 import * as Kookit from "../../assets/lib/kookit.min";
 import SparkMD5 from "spark-md5";
 
-function detectFormat(filename?: string, contentType?: string): string {
+function detectFormat(
+  filename: string,
+  contentType: string,
+  format: string
+): string {
   const name = (filename || "").toLowerCase();
   if (name.endsWith(".epub") || contentType === "application/epub+zip")
     return "EPUB";
@@ -27,7 +31,7 @@ function detectFormat(filename?: string, contentType?: string): string {
   if (name.endsWith(".md")) return "MD";
   if (name.endsWith(".fb2")) return "FB2";
   if (name.endsWith(".html") || name.endsWith(".htm")) return "HTML";
-  return "EPUB";
+  return format || "EPUB";
 }
 
 function detectCharset(contentType?: string): string {
@@ -49,6 +53,7 @@ export default class Downloader extends React.Component<
   async componentDidMount() {
     this._isMounted = true;
     const electronicBookId = this.props.match.params?.electronicBookId;
+    const format = this.props.match.params?.format;
     if (!electronicBookId) {
       this.setState({ status: "error", message: "Missing electronicBookId" });
       return;
@@ -65,7 +70,6 @@ export default class Downloader extends React.Component<
           existingFormatLower,
           existingRecord.path
         );
-        console.log(alreadyExists);
         if (alreadyExists) {
           if (this._isMounted) {
             ConfigService.setReaderConfig("isDownloading", "no");
@@ -85,11 +89,14 @@ export default class Downloader extends React.Component<
       const { buffer, filename, contentType } = await downloadElectronicBook(
         electronicBookId
       );
-
       if (!buffer || buffer.byteLength === 0) {
         throw new Error("下载结果为空");
       }
-      const formatLower = detectFormat(filename, contentType).toLowerCase();
+      const formatLower = detectFormat(
+        filename || "",
+        contentType || "",
+        format || ""
+      ).toLowerCase();
       const charset = detectCharset(contentType);
 
       const bookName = filename
@@ -97,7 +104,6 @@ export default class Downloader extends React.Component<
           ? filename.slice(0, filename.length - formatLower.length - 1)
           : filename
         : `${electronicBookId}.${formatLower}`;
-      console.log(bookName, charset);
 
       await BookUtil.addBook(electronicBookId, formatLower, buffer);
       const exists = await BookUtil.isBookExist(

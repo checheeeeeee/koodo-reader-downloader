@@ -129,7 +129,10 @@ const Router = () => {
       <Switch>
         <Route component={Manager} path="/manager" />
         <Route component={Login} path="/login" />
-        <Route component={Downloader} path="/download/:electronicBookId/:format/:name" />
+        <Route
+          component={Downloader}
+          path="/download/:electronicBookId/:format"
+        />
         <Route component={Downloader} path="/download/:electronicBookId" />
         <Route component={HtmlReader} path="/epub" />
         <Route component={HtmlReader} path="/mobi" />
