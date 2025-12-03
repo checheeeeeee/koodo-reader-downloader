@@ -1,6 +1,6 @@
 import React from "react";
 import { DownloaderProps, DownloaderState } from "./interface";
-import { downloadElectronicBook } from "../../services/ebook";
+import { downloadElectronicBookWithProgress } from "../../services/ebook";
 import Book from "../../models/Book";
 import DatabaseService from "../../utils/storage/databaseService";
 import BookUtil from "../../utils/file/bookUtil";
@@ -53,6 +53,10 @@ export default class Downloader extends React.Component<
   async componentDidMount() {
     this._isMounted = true;
     const electronicBookId = this.props.match.params?.electronicBookId;
+    const totalBytesParam = parseInt(
+      this.props.match.params?.totalBytes || "0"
+    );
+    console.log(this.props.match.params);
     const format = this.props.match.params?.format;
     if (!electronicBookId) {
       this.setState({ status: "error", message: "Missing electronicBookId" });
@@ -75,20 +79,30 @@ export default class Downloader extends React.Component<
             ConfigService.setReaderConfig("isDownloading", "no");
             this.props.history.replace({
               pathname: `/${existingFormatLower}/${electronicBookId}`,
-              search: `?title=${encodeURIComponent(
-                existingRecord.name
-              )}&file=${encodeURIComponent(electronicBookId)}`,
+              search: `?title=${encodeURIComponent(existingRecord.name)}`,
             });
           }
           return;
         }
       }
 
-      this.setState({ status: "loading" });
+      this.setState({
+        status: "loading",
+        downloadedBytes: 0,
+        totalBytes: totalBytesParam,
+      });
       ConfigService.setReaderConfig("isDownloading", "yes");
-      const { buffer, filename, contentType } = await downloadElectronicBook(
-        electronicBookId
-      );
+      const { buffer, filename, contentType } =
+        await downloadElectronicBookWithProgress(
+          electronicBookId,
+          (received) => {
+            if (this._isMounted) {
+              this.setState({
+                downloadedBytes: received,
+              });
+            }
+          }
+        );
       if (!buffer || buffer.byteLength === 0) {
         throw new Error("下载结果为空");
       }
@@ -156,9 +170,7 @@ export default class Downloader extends React.Component<
         ConfigService.setReaderConfig("isDownloading", "no");
         this.props.history.replace({
           pathname: `/${formatLower}/${electronicBookId}`,
-          search: `?title=${encodeURIComponent(
-            result.name
-          )}&file=${encodeURIComponent(electronicBookId)}`,
+          search: `?title=${encodeURIComponent(result.name)}`,
         });
       }
     } catch (err) {
@@ -228,7 +240,69 @@ export default class Downloader extends React.Component<
                 />
               </circle>
             </svg>
-            <div style={{ color: "#666" }}>正在下载电子书文件流，请稍候…</div>
+            <div style={{ color: "#666" }}>正在下载电子书，请稍候…</div>
+            <div style={{ color: "#444", fontSize: 16, margin: "12px 6px 0" }}>
+              {typeof this.state.downloadedBytes === "number" &&
+              typeof this.state.totalBytes === "number"
+                ? `${(this.state.downloadedBytes / 1024).toFixed(2)} KB / ${
+                    this.state.totalBytes > 0
+                      ? (this.state.totalBytes / 1024).toFixed(2)
+                      : "?"
+                  } KB (${
+                    this.state.totalBytes > 0
+                      ? (
+                          ((this.state.downloadedBytes || 0) /
+                            (this.state.totalBytes || 1)) *
+                          100
+                        ).toFixed(1)
+                      : "?"
+                  }%)`
+                : ""}
+            </div>
+            <div
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={
+                this.state.totalBytes && this.state.totalBytes > 0
+                  ? Math.min(
+                      100,
+                      Math.max(
+                        0,
+                        ((this.state.downloadedBytes || 0) /
+                          (this.state.totalBytes || 1)) *
+                          100
+                      )
+                    )
+                  : 0
+              }
+              style={{
+                width: 360,
+                height: 10,
+                background: "#e5e7eb",
+                borderRadius: 6,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width:
+                    this.state.totalBytes && this.state.totalBytes > 0
+                      ? `${Math.min(
+                          100,
+                          Math.max(
+                            0,
+                            ((this.state.downloadedBytes || 0) /
+                              (this.state.totalBytes || 1)) *
+                              100
+                          )
+                        ).toFixed(1)}%`
+                      : "0%",
+                  background: "#3b82f6",
+                }}
+              />
+            </div>
           </div>
         )}
         {isError && (

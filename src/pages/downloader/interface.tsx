@@ -4,11 +4,15 @@ export interface DownloaderRouteParams {
   electronicBookId: string;
   format?: string;
   name?: string;
+  totalBytes?: string;
 }
 
-export interface DownloaderProps extends RouteComponentProps<DownloaderRouteParams> {}
+export interface DownloaderProps
+  extends RouteComponentProps<DownloaderRouteParams> {}
 
 export interface DownloaderState {
   status: "idle" | "loading" | "error";
   message?: string;
+  downloadedBytes?: number;
+  totalBytes?: number;
 }

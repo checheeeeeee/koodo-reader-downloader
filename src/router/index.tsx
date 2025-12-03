@@ -131,6 +131,10 @@ const Router = () => {
         <Route component={Login} path="/login" />
         <Route
           component={Downloader}
+          path="/download/:electronicBookId/:format/:totalBytes"
+        />
+        <Route
+          component={Downloader}
           path="/download/:electronicBookId/:format"
         />
         <Route component={Downloader} path="/download/:electronicBookId" />
