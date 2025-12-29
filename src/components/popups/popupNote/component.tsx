@@ -12,6 +12,7 @@ import { ConfigService } from "../../../assets/lib/kookit-extra-browser.min";
 import DatabaseService from "../../../utils/storage/databaseService";
 import ColorOption from "../../colorOption";
 import copy from "copy-text-to-clipboard";
+import { addNoteRequest, deleteNoteRequest } from "../../../services/notes";
 class PopupNote extends React.Component<PopupNoteProps, PopupNoteState> {
   constructor(props: PopupNoteProps) {
     super(props);
@@ -143,6 +144,20 @@ class PopupNote extends React.Component<PopupNoteProps, PopupNoteState> {
         color,
         tag
       );
+      const addRes = await addNoteRequest({
+        title: `${this.props.currentBook.name}-读书笔记`,
+        label: ["读书笔记", ...note.tag],
+        content: `- **原文**: \n${this.state.text}\n\n - **笔记**: \n${note.notes}`,
+        contentJson: "",
+        noteType: 1,
+        status: 1,
+        noteJson: {
+          type: "read",
+          url: "",
+        },
+      });
+      console.log(addRes.data?.id);
+      note.key = addRes.data?.id || "";
       DatabaseService.saveRecord(note, "notes").then(async () => {
         this.props.handleOpenMenu(false);
         toast.success(this.props.t("Addition successful"));
@@ -157,6 +172,7 @@ class PopupNote extends React.Component<PopupNoteProps, PopupNoteState> {
   }
   handleUpdateHighlight = (color: number) => {};
   handleClose = () => {
+    deleteNoteRequest(this.props.noteKey);
     if (this.props.noteKey) {
       DatabaseService.deleteRecord(this.props.noteKey, "notes").then(() => {
         toast.success(this.props.t("Deletion successful"));

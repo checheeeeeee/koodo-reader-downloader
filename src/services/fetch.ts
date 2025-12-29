@@ -28,3 +28,25 @@ export async function fetchData<T = unknown>(
 
   return await response.json();
 }
+
+export const getApiBaseUrl = (): string => {
+  const envVal = (process.env.REACT_APP_API_BASE_URL || "").trim();
+  if (envVal.length > 0) return envVal;
+  const winVal =
+    typeof window !== "undefined"
+      ? (window.__ENV__?.REACT_APP_API_BASE_URL || "").trim()
+      : "";
+  if (winVal.length > 0) return winVal;
+  return process.env.NODE_ENV === "development" ? "/proxy-api" : "";
+};
+
+export interface ApiResponse<T> {
+  code: number;
+  msg: string;
+  data: T;
+}
+
+export type ApiResponseExpand<T> = {
+  code: number;
+  msg: string;
+} & T;

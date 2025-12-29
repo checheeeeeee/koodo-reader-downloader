@@ -1,3 +1,4 @@
+import { getApiBaseUrl } from "./fetch";
 // 通用响应类型（用于更新、删除等操作）
 export interface ApiResponse {
   code: number;
@@ -13,16 +14,7 @@ declare global {
   }
 }
 
-const getApiBaseUrl = (): string => {
-  const envVal = (process.env.REACT_APP_API_BASE_URL || "").trim();
-  if (envVal.length > 0) return envVal;
-  const winVal =
-    typeof window !== "undefined"
-      ? (window.__ENV__?.REACT_APP_API_BASE_URL || "").trim()
-      : "";
-  if (winVal.length > 0) return winVal;
-  return process.env.NODE_ENV === "development" ? "/proxy-api" : "";
-};
+
 export const downloadElectronicBook = async (
   electronicBookId: string
 ): Promise<{
@@ -34,7 +26,7 @@ export const downloadElectronicBook = async (
   const headers = new Headers();
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
-    headers.set("clientid", "cdafd42e4f9befd1017351d82706b4f6");
+    headers.set("clientid", process.env.REACT_APP_CLIENT_ID || "");
   }
   const res = await fetch(
     `${getApiBaseUrl()}/knowledge/electronicBook/download/${electronicBookId}`,
@@ -65,7 +57,7 @@ export const downloadElectronicBookWithProgress = async (
   const headers = new Headers();
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
-    headers.set("clientid", "cdafd42e4f9befd1017351d82706b4f6");
+    headers.set("clientid", process.env.REACT_APP_CLIENT_ID || "");
   }
   const res = await fetch(
     `${getApiBaseUrl()}/knowledge/electronicBook/download/${electronicBookId}`,
